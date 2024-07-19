@@ -1,0 +1,74 @@
+# ci workflow for backend services
+name: ci-backend
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+# run lint job with flake8
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository.
+      uses: actions/checkout@v3
+    
+    - name: Setup python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+
+    - name: Install pre-requirements
+      working-directory: solution/backend
+      run: |
+        pip install pipenv
+        pip install flake8
+
+    - name: Run the Lint test with flake8
+      run: |
+        echo "Running Lint test with flake8..."
+        flake8 --extend-ignore E501 solution/backend/
+# run test job with pytest
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository.
+      uses: actions/checkout@v3
+    
+    - name: Setup python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+
+    - name: Install pre-requirements
+      working-directory: solution/backend
+      run: |
+        pip install pipenv
+        pip install flake8
+        pip install pytest
+        pip install flask
+
+    - name: Run test python with pytest
+      run: |
+        echo "Running test python with pytest..."
+        cd solution/backend/
+        pip install flask
+        pipenv install
+        pipenv run test
+# run build and package application
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository.
+      uses: actions/checkout@v3
+      
+    - name: Build docker images
+      run: |
+        cd solution/backend
+        docker build --tag movies_backend:latest .

@@ -1,0 +1,59 @@
+# ci workflow for backend services
+name: ci-frontend
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  # run lint job for react js
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository.
+        uses: actions/checkout@v3
+
+      - name: Setup pre-requirements
+        working-directory: solution/frontend
+        run: |
+          #          nvm use
+          npm ci
+
+      - name: Run test
+        working-directory: solution/frontend
+        run: |
+          npm run lint
+  # run test job for react js
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository.
+        uses: actions/checkout@v3
+
+      - name: Setup pre-requirements
+        working-directory: solution/frontend
+        run: |
+          # curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+          # nvm use
+          npm ci
+
+      - name: Run test
+        working-directory: solution/frontend
+        run: |
+          npm test
+  # build job to build application and package it
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository.
+        uses: actions/checkout@v3
+
+      - name: Build docker images
+        run: |
+          cd solution/frontend
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=movies_frontend:latest .
