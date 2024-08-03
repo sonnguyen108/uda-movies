@@ -21,14 +21,14 @@ jobs:
         python-version: "3.10"
 
     - name: Install Rependencies
-      working-directory: starter/backend 
+      working-directory: solution/backend 
       run:  |
         python -m pip install --upgrade pip
         pip install pipenv
         pip install flake8
 
     - name: Checkout Run Lint
-      run: cd starter/backend && pipenv run lint
+      run: cd solution/backend && pipenv run lint
 
   Test:
     runs-on: ubuntu-latest
@@ -43,14 +43,14 @@ jobs:
         python-version: "3.10"
 
     - name: Install Dependencies
-      working-directory: starter/backend 
+      working-directory: solution/backend 
       run:  |
         python -m pip install --upgrade pip
         pip install pipenv
         pip install flake8
 
     - name: Test
-      run: cd starter/backend && pipenv install pytest && pipenv run test
+      run: cd solution/backend && pipenv install pytest && pipenv run test
 
       
   Build:
@@ -75,7 +75,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build and Push Docker Image
-      working-directory: starter/backend
+      working-directory: solution/backend
       env:
         IMAGE_TAG: latest
         REPO_NAME: backend
@@ -87,7 +87,7 @@ jobs:
        aws eks update-kubeconfig --name udacity-project4 --region us-east-1
 
     - name: Deploy Docker Image to Amazon EKS
-      working-directory: starter/backend/k8s
+      working-directory: solution/backend/k8s
       env:
         IMAGE_TAG: latest
         REPO_NAME: backend
