@@ -4,8 +4,6 @@ import MovieDetails from './components/MovieDetails';
 import './App.css';
 
 
-  
-
 
 
 
