@@ -275,7 +275,7 @@ resource "aws_codebuild_project" "codebuild" {
 
   source {
     type            = "GITHUB"
-    location        = "https://github.com/your-org/your-repo"
+    location        = "https://github.com/sonnguyen108/uda-movies.git"
     git_clone_depth = 1
     buildspec       = "buildspec.yml"
   }
@@ -328,3 +328,4 @@ data "aws_iam_policy_document" "github_policy" {
     resources = ["*"]
   }
 }
+
