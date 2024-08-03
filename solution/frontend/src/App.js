@@ -4,6 +4,10 @@ import MovieDetails from './components/MovieDetails';
 import './App.css';
 
 
+  
+
+
+
 
 export default function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
