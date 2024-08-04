@@ -6,9 +6,8 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
+    paths:
+      - 'solution/frontend/**'
 
 jobs:
   # run lint job for react js
@@ -45,14 +44,16 @@ jobs:
       - name: Run test
         working-directory: solution/frontend
         run: |
-          npm test
+          npm run test
   # build job to build application and package it
   build:
     runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test 
     steps:
       - name: Check out repository.
         uses: actions/checkout@v3
-
       - name: Build docker images
         run: |
           cd solution/frontend
