@@ -1,4 +1,4 @@
-name: Movies app continious delivery
+name: cd-frontend-movies-uda
 
 on:
   workflow_dispatch:
@@ -7,60 +7,57 @@ on:
       - main
 
 jobs:
-  Linting:
-    runs-on: ubuntu-latest
-    environment: Devlopmnet Environment
-
-    steps:
-    - name: Check the Repository
-      uses: actions/checkout@v3
-
-    - name: Use Node.js 18
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-        cache: 'npm'
-        cache-dependency-path: solution/frontend/package-lock.json
-
-    - name: Install Dependencies
-      working-directory: solution/frontend
-      run: npm ci
-
-    - name: Checkout Run Lint
-      run: cd solution/frontend && npm run lint
-
   Test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check the Repository
+    - name: Check the git repo
       uses: actions/checkout@v3
 
-    - name: Use Node.js 18
+    - name: Setup NodeJS
       uses: actions/setup-node@v3
       with:
         node-version: 18
         cache: 'npm'
         cache-dependency-path: solution/frontend/package-lock.json
         
-    - name: Install Dependencies
+    - name: Install Deps
       working-directory: solution/frontend
       run: npm ci
   
     - name: Test
       run: cd solution/frontend && npm run test
 
+  Lint:
+    runs-on: ubuntu-latest
 
+    steps:
+    - name: Check the git repo
+      uses: actions/checkout@v3
+
+    - name: Setup NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: 'npm'
+        cache-dependency-path: solution/frontend/package-lock.json
+
+    - name: Install Deps
+      working-directory: solution/frontend
+      run: npm ci
+
+    - name: Checkout Run Lint
+      run: cd solution/frontend && npm run lint
 
   Build:
-    needs: [Linting, Test]
+    needs: [Lint, Test]
     runs-on: ubuntu-latest
     
     steps:
-    - name: Check the Repository
+    - name: Check the git repo
       uses: actions/checkout@v3
     
-    - name: Use Node.js 18
+    - name: Setup NodeJS
       uses: actions/setup-node@v3
       with:
         node-version: 18
@@ -76,7 +73,7 @@ jobs:
         aws-region: us-east-1
   
 
-    - name: Login to Amazon 
+    - name: Login AWS
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
@@ -84,23 +81,22 @@ jobs:
       working-directory: solution/frontend
       env:
         IMAGE_TAG: latest
-        REPO_NAME: frontend
+        REPO: frontend
       run: |
-        docker build --build-arg=REACT_APP_MOVIE_API_URL=http://ab78f1bdfa72245cab0ebeaf6884b81a-274140484.us-east-1.elb.amazonaws.com --tag 435720610029.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG .
-        docker push 435720610029.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+        docker build --build-arg=REACT_APP_MOVIE_API_URL=http://ab78f1bdfa72245cab0ebeaf6884b81a-274140484.us-east-1.elb.amazonaws.com --tag 435720610029.dkr.ecr.us-east-1.amazonaws.com/$REPO:$IMAGE_TAG .
+        docker push 435720610029.dkr.ecr.us-east-1.amazonaws.com/$REPO:$IMAGE_TAG
     
 
-    - name: Configure Kubeconfig
+    - name: Configure kubectl
       run:
        aws eks update-kubeconfig --name cluster --region us-east-1
 
 
-    - name: Deploy Docker Image to Amazon EKS
+    - name: Deploy Docker Image
       working-directory: solution/frontend/k8s
       env:
         IMAGE_TAG: latest
-        REPO_NAME: frontend
+        REPO: frontend
       run: |
-          kustomize edit set image frontend=435720610029.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+          kustomize edit set image frontend=435720610029.dkr.ecr.us-east-1.amazonaws.com/$REPO:$IMAGE_TAG
           kustomize build | kubectl apply -f -
-
